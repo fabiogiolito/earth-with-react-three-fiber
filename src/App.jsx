@@ -28,7 +28,6 @@ function Earth() {
 }
 
 function App() {
-  const { x, y, z } = sunDirection;
   return (
     <Canvas 
       camera={{ position: [0, 0.1, 5]}}
@@ -36,8 +35,6 @@ function App() {
     }}>
       <color attach="background" args={["black"]} />
       <Earth />
-      <hemisphereLight args={[0xffffff, 0x000000, 3.0]} />
-      <directionalLight position={[x, y, z]} />
       {/* <Nebula /> */}
       {/* <Starfield /> */}
       <OrbitControls />

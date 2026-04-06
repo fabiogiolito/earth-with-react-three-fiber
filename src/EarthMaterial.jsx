@@ -179,6 +179,10 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     }
 
     void main() {
+      vec3 normal = normalize(vNormal);
+      vec3 viewDir = normalize(cameraPosition - vPosition);
+      vec3 sunDir = normalize(sunDirection);
+
       vec3 dayColor = texture(dayTexture, vUv).rgb;
 
       // Land mask from dedicated B&W texture (white = land, black = ocean)
@@ -188,6 +192,22 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       vec3 goldColor = computeGold(vUv);
       vec3 blended = overlayBlend(dayColor, goldColor);
       vec3 color = mix(dayColor, blended, landMask * 0.55);
+
+      // Single sun source — sharp terminator with slight penumbra
+      float sunDot = dot(sunDir, normal);
+      float light = smoothstep(-0.05, 0.2, sunDot);
+
+      // Limb darkening: edges of the lit side dim toward the terminator
+      float rim = pow(clamp(dot(viewDir, normal), 0.0, 1.0), 0.5);
+      light *= mix(0.5, 1.0, rim);
+
+      color *= light;
+
+      // Metallic specular on continents — Blinn-Phong, gold tint, tight highlight
+      vec3 halfDir = normalize(sunDir + viewDir);
+      float spec = pow(max(dot(halfDir, normal), 0.0), 128.0);
+      spec *= smoothstep(0.0, 0.3, sunDot); // only on lit side
+      color += vec3(1.0, 0.82, 0.28) * spec * landMask * 2.5;
 
       gl_FragColor = vec4(color, 1.0);
     }
