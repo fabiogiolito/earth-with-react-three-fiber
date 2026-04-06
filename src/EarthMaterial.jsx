@@ -73,10 +73,10 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       // Specular cloud color
       vec2 specularCloudsColor = texture(cloudsTexture, vUv).rg;
 
-      // Clouds
-      float cloudsMix = smoothstep(0.0, 1.0, specularCloudsColor.g);
-      cloudsMix *= dayMix;
-      color = mix(color, vec3(1.0), cloudsMix);
+      // // Clouds
+      // float cloudsMix = smoothstep(0.0, 1.0, specularCloudsColor.g);
+      // cloudsMix *= dayMix;
+      // color = mix(color, vec3(1.0), cloudsMix);
 
       // Specular
       vec3 reflection = reflect(- sunDirection, normal);

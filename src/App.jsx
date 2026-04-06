@@ -2,8 +2,8 @@ import * as THREE from "three";
 import React from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import Nebula from "./Nebula";
-import Starfield from "./Starfield";
+// import Nebula from "./Nebula";
+// import Starfield from "./Starfield";
 import EarthMaterial from "./EarthMaterial";
 import AtmosphereMesh from "./AtmosphereMesh";
 
@@ -34,11 +34,12 @@ function App() {
       camera={{ position: [0, 0.1, 5]}}
       gl={{ toneMapping: THREE.NoToneMapping 
     }}>
+      <color attach="background" args={["black"]} />
       <Earth />
       <hemisphereLight args={[0xffffff, 0x000000, 3.0]} />
       <directionalLight position={[x, y, z]} />
-      <Nebula />
-      <Starfield />
+      {/* <Nebula /> */}
+      {/* <Starfield /> */}
       <OrbitControls />
     </Canvas>
   );
