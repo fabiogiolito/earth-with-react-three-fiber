@@ -12,8 +12,9 @@ const sunDirection = new THREE.Vector3(-2, 0.5, 1.5);
 function Earth() {
   const ref = React.useRef();
   
-  useFrame(() => {
+  useFrame(({ camera }) => {
     ref.current.rotation.y += 0.001;
+    sunDirection.copy(camera.position).normalize();
   });
   const axialTilt = 23.4 * Math.PI / 180;
   return (
