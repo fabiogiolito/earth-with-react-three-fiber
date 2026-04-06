@@ -44,7 +44,7 @@ function Earth() {
 function App() {
   return (
     <Canvas
-      camera={{ position: [0, 0.1, 5] }}
+      camera={{ position: [0, 0.1, 10], fov: 35 }}
       gl={{ toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}>
       <color attach="background" args={["black"]} />
       <Earth />
