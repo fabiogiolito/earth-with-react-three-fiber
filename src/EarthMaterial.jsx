@@ -55,7 +55,7 @@ function getEarthMat({ keyLightDir, contourLightDir }) {
 
       // Warm ambient constant — keeps shadow side dark but faintly visible
       // Reference: shadow side is nearly black with a hint of warm amber
-      vec3 warmAmbient = vec3(0.05, 0.03, 0.01);
+      vec3 warmAmbient = vec3(0.18, 0.14, 0.10);
 
       vec3 color = dayColor * (keyDiffuse + warmAmbient);
 
