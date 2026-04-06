@@ -58,11 +58,11 @@ function getEarthMat(sunDirection = defaultSunDirection) {
 
       vec3 color = dayColor * light;
 
-      // Metallic sheen on continents only — Blinn-Phong, gold tint
+      // Metallic sheen on continents only — Blinn-Phong, gold tint, dull metal
       vec3  halfDir = normalize(sunDir + viewDir);
-      float spec    = pow(max(dot(halfDir, normal), 0.0), 96.0);
+      float spec    = pow(max(dot(halfDir, normal), 0.0), 32.0);
       spec         *= smoothstep(0.0, 0.25, sunDot);
-      color        += vec3(1.0, 0.85, 0.35) * spec * landMask * 2.0;
+      color        += vec3(1.0, 0.85, 0.35) * spec * landMask * 0.6;
 
       gl_FragColor = vec4(color, 1.0);
     }
