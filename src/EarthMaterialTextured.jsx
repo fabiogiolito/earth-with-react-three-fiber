@@ -5,12 +5,27 @@ import { useLoader, useFrame } from "@react-three/fiber";
 const defaultSunDirection = new THREE.Vector3(-2, 0.5, 1.5).normalize();
 
 function getEarthMat(sunDirection = defaultSunDirection) {
+  const map = useLoader(
+    THREE.TextureLoader,
+    "./textures/earth-daymap-4k.jpg"
+  );
+  // const nightMap = useLoader(
+  //   THREE.TextureLoader,
+  //   "./textures/earth-nightmap-4k.jpg"
+  // );
+  const cloudsMap = useLoader(
+    THREE.TextureLoader,
+    "./textures/earth-clouds-4k.jpg"
+  );
   const landMaskMap = useLoader(
     THREE.TextureLoader,
     "./textures/earth-landmask.jpg"
   );
 
   const uniforms = {
+    dayTexture: { value: map },
+    // nightTexture: { value: nightMap },
+    cloudsTexture: { value: cloudsMap },
     landMaskTexture: { value: landMaskMap },
     sunDirection: { value: sunDirection },
     iTime: { value: 0 },
@@ -35,6 +50,9 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     #define PI  3.141592654
     #define TAU (2.0*PI)
 
+    uniform sampler2D dayTexture;
+    // uniform sampler2D nightTexture;
+    uniform sampler2D cloudsTexture;
     uniform sampler2D landMaskTexture;
     uniform vec3 sunDirection;
     uniform float iTime;
@@ -43,7 +61,7 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     varying vec3 vNormal;
     varying vec3 vPosition;
 
-    // ---- Shared noise helpers ----
+    // ---- Gold shader helpers ----
 
     void rot(inout vec2 p, float a) {
       float c = cos(a), s = sin(a);
@@ -57,50 +75,17 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       float x2 = x*x;
       return clamp(x*(27.0 + x2) / (27.0 + 9.0*x2), -1.0, 1.0);
     }
+    float onoise(vec2 x) {
+      x *= 0.5;
+      float a = sin(x.x), b = sin(x.y);
+      return mix(a, b, psin(TAU * tanh_approx(a*b + a + b)));
+    }
     float vnoise(vec2 x) {
       vec2 i = floor(x), w = fract(x);
       vec2 u = w*w*w*(w*(w*6.0 - 15.0) + 10.0);
       float a = hash(i), b = hash(i + vec2(1,0)), c = hash(i + vec2(0,1)), d = hash(i + vec2(1,1));
       return a + (b-a)*u.x + (c-a)*u.y + (d-c+a-b)*u.x*u.y;
     }
-    float onoise(vec2 x) {
-      x *= 0.5;
-      float a = sin(x.x), b = sin(x.y);
-      return mix(a, b, psin(TAU * tanh_approx(a*b + a + b)));
-    }
-
-    // ---- Sand texture (oceans) ----
-
-    float sandFbm(vec2 p) {
-      float h = 0.0, a = 1.0;
-      for (int i = 0; i < 5; i++) {
-        h += a * vnoise(p);
-        a *= 0.52;
-        p *= 2.07;
-        p += vec2(1.7, 0.9);
-      }
-      return h;
-    }
-
-    vec3 computeSand(vec2 uv) {
-      // Two scales: coarse dunes + fine grain
-      vec2 p1 = uv * vec2(6.0, 3.0);
-      vec2 p2 = uv * vec2(28.0, 14.0);
-
-      float dunes = sandFbm(p1);
-      float grain = sandFbm(p2) * 0.4;
-      float n = clamp(dunes * 0.7 + grain, 0.0, 1.0);
-
-      vec3 sandDark  = vec3(0.52, 0.38, 0.20);
-      vec3 sandMid   = vec3(0.76, 0.62, 0.38);
-      vec3 sandLight = vec3(0.93, 0.84, 0.64);
-      vec3 col = mix(sandDark, sandMid, smoothstep(0.2, 0.6, n));
-      col      = mix(col, sandLight, smoothstep(0.6, 0.9, n));
-      return col;
-    }
-
-    // ---- Gold metal texture (continents) ----
-
     float fbm1(vec2 p) {
       vec2 op = p; const float aa = 0.45, pp = 2.03, rr = 1.2; const vec2 oo = -vec2(1.23, 1.5);
       float h = 0., d = 0., a = 1.;
@@ -130,7 +115,8 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       float a = 0.0009 * iTime;
       p += 9.0 * vec2(cos(a), sin(a));
       p *= 2.0; p += 13.0;
-      return 0.35 * tanh_approx(3.0*warp(p)) / 3.0;
+      float h = warp(p);
+      return 0.35 * tanh_approx(3.0*h) / 3.0;
     }
     vec3 goldNormal(vec2 p) {
       const float eps = 0.002;
@@ -146,6 +132,7 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       return c * (lum > 0.0 ? lum2/lum : 1.0);
     }
     vec3 computeGold(vec2 uv) {
+      // Map UV to aspect-corrected centered coords (sphere UVs are 2:1 ratio)
       vec2 p = uv * 2.0 - 1.0;
       p.x *= 2.0;
 
@@ -182,52 +169,52 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       return col;
     }
 
-    void main() {
-      vec3 normal  = normalize(vNormal);
-      vec3 viewDir = normalize(cameraPosition - vPosition);
-      vec3 sunDir  = normalize(sunDirection);
+    // Overlay blend: lets base texture show through the gold
+    vec3 overlayBlend(vec3 base, vec3 blend) {
+      return vec3(
+        base.r < 0.5 ? 2.0*base.r*blend.r : 1.0 - 2.0*(1.0-base.r)*(1.0-blend.r),
+        base.g < 0.5 ? 2.0*base.g*blend.g : 1.0 - 2.0*(1.0-base.g)*(1.0-blend.g),
+        base.b < 0.5 ? 2.0*base.b*blend.b : 1.0 - 2.0*(1.0-base.b)*(1.0-blend.b)
+      );
+    }
 
+    void main() {
+      vec3 normal = normalize(vNormal);
+      vec3 viewDir = normalize(cameraPosition - vPosition);
+      vec3 sunDir = normalize(sunDirection);
+
+      vec3 dayColor = texture(dayTexture, vUv).rgb;
+
+      // Land mask from dedicated B&W texture (white = land, black = ocean)
       float landMask = texture(landMaskTexture, vUv).r;
 
-      // Surface color: sand ocean, gold metal continents
-      vec3 sandColor = computeSand(vUv);
+      // Gold effect overlaid on day texture, showing texture through
       vec3 goldColor = computeGold(vUv);
-      vec3 surface   = mix(sandColor, goldColor, landMask);
+      vec3 blended = overlayBlend(dayColor, goldColor);
+      vec3 color = mix(dayColor, blended, landMask * 0.55);
 
-      // ---- Dramatic 3D lighting ----
-
+      // Single sun source — sharp terminator with slight penumbra
       float sunDot = dot(sunDir, normal);
+      float light = smoothstep(-0.05, 0.2, sunDot);
 
-      // Diffuse — pow < 1 keeps mid-tones bright, falls sharply in shadow
-      float diffuse = pow(max(sunDot, 0.0), 0.75);
+      // Limb darkening: edges of the lit side dim toward the terminator
+      float rim = pow(clamp(dot(viewDir, normal), 0.0, 1.0), 0.5);
+      light *= mix(0.5, 1.0, rim);
 
-      // Hard terminator — narrow penumbra for dramatic day/night line
-      float terminator = smoothstep(-0.04, 0.12, sunDot);
+      color *= light;
 
-      // Limb darkening — sphere edges dim on the lit side
-      float facing  = clamp(dot(viewDir, normal), 0.0, 1.0);
-      float limb    = mix(0.35, 1.0, pow(facing, 0.6));
-
-      float light = diffuse * terminator * limb;
-      vec3 color  = surface * light;
-
-      // Specular highlight — tight gold glint on continents, soft sheen on sand
-      vec3 halfDir   = normalize(sunDir + viewDir);
-      float specBase = max(dot(halfDir, normal), 0.0);
-      float litMask  = smoothstep(0.0, 0.25, sunDot);
-
-      float specGold = pow(specBase, 220.0) * litMask;
-      float specSand = pow(specBase, 24.0)  * litMask;
-
-      color += vec3(1.00, 0.88, 0.35) * specGold * landMask        * 4.0;
-      color += vec3(0.98, 0.92, 0.75) * specSand * (1.0 - landMask) * 0.25;
+      // Metallic specular on continents — Blinn-Phong, gold tint, tight highlight
+      vec3 halfDir = normalize(sunDir + viewDir);
+      float spec = pow(max(dot(halfDir, normal), 0.0), 128.0);
+      spec *= smoothstep(0.0, 0.3, sunDot); // only on lit side
+      color += vec3(1.0, 0.82, 0.28) * spec * landMask * 2.5;
 
       gl_FragColor = vec4(color, 1.0);
     }
   `;
 
   const material = new THREE.ShaderMaterial({
-    uniforms,
+    uniforms: uniforms,
     vertexShader: vs,
     fragmentShader: fs,
   });
