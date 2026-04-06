@@ -61,9 +61,9 @@ function getEarthMat({ keyLightDir, contourLightDir }) {
 
       // Metallic specular on continents — moderate spread, warm gold
       vec3  keyHalf = normalize(keyLightDir + viewDir);
-      float spec    = pow(max(dot(keyHalf, normal), 0.0), 38.0);
+      float spec    = pow(max(dot(keyHalf, normal), 0.0), 20.0);
       spec *= max(keyDot, 0.0);
-      color += vec3(1.00, 0.84, 0.28) * spec * landMask * 1.1;
+      color += vec3(1.00, 0.84, 0.28) * spec * landMask * 0.45;
 
       // Contour: very subtle rim on the back-lit silhouette
       float contourDot = max(dot(contourLightDir, normal), 0.0);
@@ -71,7 +71,7 @@ function getEarthMat({ keyLightDir, contourLightDir }) {
       color += vec3(1.00, 0.88, 0.60) * contourDot * rimWeight * 0.6;
 
       // Strong Fresnel edge darkening — reference shows edges going quite dark
-      color *= mix(0.08, 1.0, pow(facing, 2.5));
+      color *= mix(0.38, 1.0, pow(facing, 2.0));
 
       gl_FragColor = vec4(color, 1.0);
     }
