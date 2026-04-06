@@ -8,14 +8,22 @@ import EarthMaterial from "./EarthMaterial";
 import AtmosphereMesh from "./AtmosphereMesh";
 
 const sunDirection = new THREE.Vector3();
+const _right = new THREE.Vector3();
+const _up = new THREE.Vector3();
 
 function Earth() {
   const ref = React.useRef();
 
   useFrame(({ camera }) => {
     ref.current.rotation.y += 0.001;
-    // Sun fixed relative to camera — always illuminates the visible hemisphere
-    sunDirection.copy(camera.position).normalize();
+    // Sun offset: higher above and to the right relative to camera
+    _right.setFromMatrixColumn(camera.matrix, 0);
+    _up.setFromMatrixColumn(camera.matrix, 1);
+    sunDirection
+      .copy(camera.position)
+      .addScaledVector(_right, 2)
+      .addScaledVector(_up, 4)
+      .normalize();
   });
   return (
     <mesh ref={ref}>

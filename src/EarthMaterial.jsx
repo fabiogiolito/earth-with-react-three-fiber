@@ -69,11 +69,10 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       float specAngle = max(dot(halfDir, normal), 0.0);
 
       // Tight concentrated highlight — exponent 180 gives a sharp metallic spot
-      float spec = pow(specAngle, 180.0);
+      float spec = pow(specAngle, 48.0);
       spec *= smoothstep(0.0, 0.1, sunDot); // only on lit side
 
-      // HDR value — ACES tone mapping compresses this into a bright but non-blown highlight
-      color += vec3(1.0, 0.80, 0.20) * spec * landMask * 5.0;
+      color += vec3(1.0, 0.80, 0.20) * spec * landMask * 1.8;
 
       // Subtle edge falloff — slight darkening at rim for depth
       float edgeFade = mix(0.65, 1.0, pow(facing, 2.0));
