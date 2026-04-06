@@ -8,13 +8,22 @@ import EarthMaterial from "./EarthMaterial";
 import AtmosphereMesh from "./AtmosphereMesh";
 
 const sunDirection = new THREE.Vector3(-2, 0.5, 1.5);
+const _right = new THREE.Vector3();
+const _up = new THREE.Vector3();
 
 function Earth() {
   const ref = React.useRef();
-  
+
   useFrame(({ camera }) => {
     ref.current.rotation.y += 0.001;
-    sunDirection.copy(camera.position).normalize();
+    // Light offset upper-right from camera by ~45 degrees
+    _right.setFromMatrixColumn(camera.matrix, 0);
+    _up.setFromMatrixColumn(camera.matrix, 1);
+    sunDirection
+      .copy(camera.position)
+      .addScaledVector(_right, 3)
+      .addScaledVector(_up, 3)
+      .normalize();
   });
   const axialTilt = 23.4 * Math.PI / 180;
   return (
