@@ -18,15 +18,12 @@ function Earth() {
     // Light offset 45 degrees on world XY plane from camera position
     sunDirection.copy(camera.position).add(_lightOffset).normalize();
   });
-  const axialTilt = 23.4 * Math.PI / 180;
   return (
-    <group rotation-z={axialTilt}>
-      <mesh ref={ref}>
-        <icosahedronGeometry args={[2, 64]} />
-        <EarthMaterial sunDirection={sunDirection}/>
-        <AtmosphereMesh />
-      </mesh>
-    </group>
+    <mesh ref={ref}>
+      <icosahedronGeometry args={[2, 64]} />
+      <EarthMaterial sunDirection={sunDirection}/>
+      <AtmosphereMesh />
+    </mesh>
   );
 }
 
