@@ -61,13 +61,8 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       vec3 normal = normalize(vNormal);
       vec3 color = vec3(0.0);
 
-      // Sun orientation
-      float sunOrientation = dot(sunDirection, normal);
-
-      // Day color (no night map, unlit side is black)
-      float dayMix = smoothstep(- 0.25, 0.5, sunOrientation);
-      vec3 dayColor = texture(dayTexture, vUv).rgb;
-      color = dayColor * dayMix;
+      // Full day, no transition
+      color = texture(dayTexture, vUv).rgb;
 
       // Specular cloud color
       vec2 specularCloudsColor = texture(cloudsTexture, vUv).rg;
