@@ -175,9 +175,9 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     void main() {
       vec3 dayColor = texture(dayTexture, vUv).rgb;
 
-      // Land mask: specular map is white on oceans, black on land — invert it
-      float landMask = 1.0 - texture(cloudsTexture, vUv).r;
-      landMask = smoothstep(0.2, 0.6, landMask);
+      // Land mask: oceans are blue-dominant, land is green/brown/tan
+      float blueExcess = dayColor.b - max(dayColor.r, dayColor.g);
+      float landMask = 1.0 - smoothstep(0.02, 0.12, blueExcess);
 
       // Gold effect overlaid on day texture, showing texture through
       vec3 goldColor = computeGold(vUv);
