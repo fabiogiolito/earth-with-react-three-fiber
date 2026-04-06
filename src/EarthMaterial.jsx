@@ -106,13 +106,13 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     }
     float warp(vec2 p) {
       vec2 v = vec2(fbm1(p), fbm1(p + 0.7*vec2(1,1)));
-      rot(v, 1.0 + iTime*0.18);
+      rot(v, 1.0 + iTime*0.04);
       vec2 vv = vec2(fbm2(p + 3.7*v), fbm2(p - 2.7*v.yx + 0.7*vec2(1,1)));
-      rot(vv, -1.0 + iTime*0.08);
+      rot(vv, -1.0 + iTime*0.018);
       return fbm3(p + 9.0*vv);
     }
     float goldHeight(vec2 p) {
-      float a = 0.004 * iTime;
+      float a = 0.0009 * iTime;
       p += 9.0 * vec2(cos(a), sin(a));
       p *= 2.0; p += 13.0;
       float h = warp(p);
@@ -187,7 +187,7 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       // Gold effect overlaid on day texture, showing texture through
       vec3 goldColor = computeGold(vUv);
       vec3 blended = overlayBlend(dayColor, goldColor);
-      vec3 color = mix(dayColor, blended, landMask);
+      vec3 color = mix(dayColor, blended, landMask * 0.55);
 
       gl_FragColor = vec4(color, 1.0);
     }
