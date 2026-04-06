@@ -58,19 +58,23 @@ function getEarthMat({ keyLightDir, fillLightDir, bounceLightDir, contourLightDi
       float keyDiffuse = smoothstep(-0.01, 0.06, keyDot)   // hard terminator
                        * mix(0.02, 1.0, pow(facing, 0.8)); // limb falloff
 
-      // --- Fill light: warm, soft, no sharp terminator ---
-      float fillDiffuse = max(dot(fillLightDir, normal), 0.0) * 0.30;
+      // --- Fill light: warm tone, soft, no sharp terminator ---
+      float fillDiffuse = max(dot(fillLightDir, normal), 0.0) * 0.35;
 
       // --- Bounce light: cool, very soft, from below ---
       float bounceDiffuse = max(dot(bounceLightDir, normal), 0.0) * 0.10;
 
-      vec3 color = dayColor * (keyDiffuse + fillDiffuse + bounceDiffuse);
+      // Apply warm tint to fill light contribution
+      vec3 fillColor   = vec3(1.0, 0.78, 0.52); // warm orange-amber
+      vec3 color = dayColor * keyDiffuse
+                 + dayColor * fillColor * fillDiffuse
+                 + dayColor * bounceDiffuse;
 
-      // --- Key specular: metallic sheen on continents ---
+      // --- Key specular: soft metallic sheen on continents ---
       vec3  keyHalf = normalize(keyLightDir + viewDir);
-      float keySpec = pow(max(dot(keyHalf, normal), 0.0), 48.0);
+      float keySpec = pow(max(dot(keyHalf, normal), 0.0), 22.0);
       keySpec *= smoothstep(0.0, 0.1, keyDot);
-      color += vec3(1.00, 0.82, 0.25) * keySpec * landMask * 1.8;
+      color += vec3(1.00, 0.82, 0.25) * keySpec * landMask * 0.7;
 
       // --- Contour light: rim highlight on silhouette edge ---
       float contourDot = max(dot(contourLightDir, normal), 0.0);

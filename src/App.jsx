@@ -22,16 +22,16 @@ function Earth() {
     _right.setFromMatrixColumn(camera.matrix, 0);
     _up.setFromMatrixColumn(camera.matrix, 1);
 
-    // Key: camera position shifted right and 45° down
-    keyLightDir.copy(camera.position).addScaledVector(_right, 3).addScaledVector(_up, -3).normalize();
+    // Key: right side, high above globe, pointing down
+    keyLightDir.copy(camera.position).addScaledVector(_right, 3).addScaledVector(_up, 7).normalize();
 
-    // Fill: left and slightly down, softer and warmer
-    fillLightDir.copy(camera.position).addScaledVector(_right, -4).addScaledVector(_up, -1.5).normalize();
+    // Fill: left side, high above globe, pointing down (warmer, handled in shader)
+    fillLightDir.copy(camera.position).addScaledVector(_right, -3).addScaledVector(_up, 7).normalize();
 
-    // Bounce: soft upward from below (floor reflection)
+    // Bounce: soft from below
     bounceLightDir.copy(camera.position).addScaledVector(_up, -8).normalize();
 
-    // Contour: behind the sphere, upper-right — creates rim on the silhouette edge
+    // Contour: behind the sphere, upper-right — rim on the silhouette edge
     contourLightDir.copy(camera.position).negate().addScaledVector(_right, 2).addScaledVector(_up, 3).normalize();
   });
 
