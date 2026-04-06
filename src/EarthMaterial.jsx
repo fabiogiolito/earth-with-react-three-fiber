@@ -50,19 +50,30 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       vec3  dayColor = texture2D(dayTexture, vUv).rgb;
       float landMask = texture2D(landMaskTexture, vUv).r;
 
-      // Diffuse — single sun, sharp terminator, limb darkening
-      float sunDot    = dot(sunDir, normal);
-      float diffuse   = smoothstep(-0.05, 0.2, sunDot);
-      float limb      = mix(0.45, 1.0, pow(clamp(dot(viewDir, normal), 0.0, 1.0), 0.5));
-      float light     = diffuse * limb;
+      float sunDot = dot(sunDir, normal);
 
+      // Hard terminator — narrow penumbra, deep shadow on the dark side
+      float diffuse = smoothstep(-0.01, 0.06, sunDot);
+
+      // Near-zero ambient floor — almost pure black in shadow (0.02 = ~2% ambient)
+      float facing  = clamp(dot(viewDir, normal), 0.0, 1.0);
+      float limb    = mix(0.02, 1.0, pow(facing, 0.8));
+
+      float light = diffuse * limb;
+
+      // Matte ocean: pure diffuse, no specular
+      // Metallic continent: full diffuse + tight bright specular
       vec3 color = dayColor * light;
 
-      // Metallic sheen on continents only — Blinn-Phong, gold tint, dull metal
-      vec3  halfDir = normalize(sunDir + viewDir);
-      float spec    = pow(max(dot(halfDir, normal), 0.0), 32.0);
-      spec         *= smoothstep(0.0, 0.25, sunDot);
-      color        += vec3(1.0, 0.85, 0.35) * spec * landMask * 0.6;
+      vec3  halfDir   = normalize(sunDir + viewDir);
+      float specAngle = max(dot(halfDir, normal), 0.0);
+
+      // Tight concentrated highlight — exponent 180 gives a sharp metallic spot
+      float spec = pow(specAngle, 180.0);
+      spec *= smoothstep(0.0, 0.1, sunDot); // only on lit side
+
+      // HDR value — ACES tone mapping compresses this into a bright but non-blown highlight
+      color += vec3(1.0, 0.80, 0.20) * spec * landMask * 5.0;
 
       gl_FragColor = vec4(color, 1.0);
     }

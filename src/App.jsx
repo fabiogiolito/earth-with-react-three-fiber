@@ -8,7 +8,7 @@ import EarthMaterial from "./EarthMaterial";
 import AtmosphereMesh from "./AtmosphereMesh";
 
 const sunDirection = new THREE.Vector3(-2, 0.5, 1.5);
-const _lightOffset = new THREE.Vector3(3, 3, 0);
+const _lightOffset = new THREE.Vector3(4, 4, 0);
 
 function Earth() {
   const ref = React.useRef();
@@ -34,8 +34,7 @@ function App() {
   return (
     <Canvas 
       camera={{ position: [0, 0.1, 5]}}
-      gl={{ toneMapping: THREE.NoToneMapping 
-    }}>
+      gl={{ toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}>
       <color attach="background" args={["black"]} />
       <Earth />
       {/* <Nebula /> */}
