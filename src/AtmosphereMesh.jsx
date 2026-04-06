@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-function getFresnelShaderArgs({rimHex = 0x0088ff, facingHex = 0x000000} = {}) {
+function getFresnelShaderArgs({rimHex = 0x000000, facingHex = 0x000000} = {}) {
   const uniforms = {
     color1: { value: new THREE.Color(rimHex) },
     color2: { value: new THREE.Color(facingHex) },

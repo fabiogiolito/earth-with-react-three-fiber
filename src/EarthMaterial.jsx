@@ -9,10 +9,10 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     THREE.TextureLoader, 
     "./textures/earth-daymap-4k.jpg"
 );
-  const nightMap = useLoader(
-    THREE.TextureLoader,
-    "./textures/earth-nightmap-4k.jpg"
-  );
+  // const nightMap = useLoader(
+  //   THREE.TextureLoader,
+  //   "./textures/earth-nightmap-4k.jpg"
+  // );
   const cloudsMap = useLoader(
     THREE.TextureLoader,
     "./textures/earth-clouds-4k.jpg"
@@ -20,7 +20,7 @@ function getEarthMat(sunDirection = defaultSunDirection) {
 
   const uniforms = {
     dayTexture: { value: map },
-    nightTexture: { value: nightMap },
+    // nightTexture: { value: nightMap },
     cloudsTexture: { value: cloudsMap },
     sunDirection: { value: sunDirection },
   };
@@ -48,7 +48,7 @@ function getEarthMat(sunDirection = defaultSunDirection) {
 
   const fs = `
     uniform sampler2D dayTexture;
-    uniform sampler2D nightTexture;
+    // uniform sampler2D nightTexture;
     uniform sampler2D cloudsTexture;
     uniform vec3 sunDirection;
 
@@ -64,11 +64,10 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       // Sun orientation
       float sunOrientation = dot(sunDirection, normal);
 
-      // Day / night color
+      // Day color (no night map, unlit side is black)
       float dayMix = smoothstep(- 0.25, 0.5, sunOrientation);
       vec3 dayColor = texture(dayTexture, vUv).rgb;
-      vec3 nightColor = texture(nightTexture, vUv).rgb;
-      color = mix(nightColor, dayColor, dayMix);
+      color = dayColor * dayMix;
 
       // Specular cloud color
       vec2 specularCloudsColor = texture(cloudsTexture, vUv).rg;
