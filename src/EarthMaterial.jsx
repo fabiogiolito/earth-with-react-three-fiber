@@ -17,11 +17,16 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     THREE.TextureLoader,
     "./textures/earth-clouds-4k.jpg"
   );
+  const landMaskMap = useLoader(
+    THREE.TextureLoader,
+    "./textures/earth-landmask.jpg"
+  );
 
   const uniforms = {
     dayTexture: { value: map },
     // nightTexture: { value: nightMap },
     cloudsTexture: { value: cloudsMap },
+    landMaskTexture: { value: landMaskMap },
     sunDirection: { value: sunDirection },
     iTime: { value: 0 },
   };
@@ -48,6 +53,7 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     uniform sampler2D dayTexture;
     // uniform sampler2D nightTexture;
     uniform sampler2D cloudsTexture;
+    uniform sampler2D landMaskTexture;
     uniform vec3 sunDirection;
     uniform float iTime;
 
@@ -175,9 +181,8 @@ function getEarthMat(sunDirection = defaultSunDirection) {
     void main() {
       vec3 dayColor = texture(dayTexture, vUv).rgb;
 
-      // Land mask: oceans are blue-dominant, land is green/brown/tan
-      float blueExcess = dayColor.b - max(dayColor.r, dayColor.g);
-      float landMask = 1.0 - smoothstep(0.02, 0.12, blueExcess);
+      // Land mask from dedicated B&W texture (white = land, black = ocean)
+      float landMask = texture(landMaskTexture, vUv).r;
 
       // Gold effect overlaid on day texture, showing texture through
       vec3 goldColor = computeGold(vUv);
