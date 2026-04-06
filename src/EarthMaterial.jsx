@@ -75,8 +75,8 @@ function getEarthMat(sunDirection = defaultSunDirection) {
       // HDR value — ACES tone mapping compresses this into a bright but non-blown highlight
       color += vec3(1.0, 0.80, 0.20) * spec * landMask * 5.0;
 
-      // Soft edge falloff — fades rim to black for a sense of depth
-      float edgeFade = pow(facing, 1.8);
+      // Subtle edge falloff — slight darkening at rim for depth
+      float edgeFade = mix(0.65, 1.0, pow(facing, 2.0));
       color *= edgeFade;
 
       gl_FragColor = vec4(color, 1.0);

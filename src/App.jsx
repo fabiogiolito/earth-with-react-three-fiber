@@ -7,16 +7,15 @@ import { OrbitControls } from "@react-three/drei";
 import EarthMaterial from "./EarthMaterial";
 import AtmosphereMesh from "./AtmosphereMesh";
 
-const sunDirection = new THREE.Vector3(-2, 0.5, 1.5);
-const _lightOffset = new THREE.Vector3(4, 4, 0);
+const sunDirection = new THREE.Vector3();
 
 function Earth() {
   const ref = React.useRef();
 
   useFrame(({ camera }) => {
     ref.current.rotation.y += 0.001;
-    // Light offset 45 degrees on world XY plane from camera position
-    sunDirection.copy(camera.position).add(_lightOffset).normalize();
+    // Sun fixed relative to camera — always illuminates the visible hemisphere
+    sunDirection.copy(camera.position).normalize();
   });
   return (
     <mesh ref={ref}>
