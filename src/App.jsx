@@ -40,7 +40,7 @@ function App() {
       <Earth />
       {/* <Nebula /> */}
       {/* <Starfield /> */}
-      <OrbitControls />
+      <OrbitControls minPolarAngle={Math.PI / 2} maxPolarAngle={Math.PI / 2} />
     </Canvas>
   );
 }
