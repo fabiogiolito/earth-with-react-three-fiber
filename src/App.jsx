@@ -5,11 +5,8 @@ import { OrbitControls } from "@react-three/drei";
 import EarthMaterial from "./EarthMaterial";
 import AtmosphereMesh from "./AtmosphereMesh";
 
-// Pre-allocated vectors — mutated each frame, passed by reference into shader uniforms
-const keyLightDir     = new THREE.Vector3(); // main key: right, 45° down
-const fillLightDir    = new THREE.Vector3(); // fill: left, 45° down, warmer
-const bounceLightDir  = new THREE.Vector3(); // bounce: soft from below
-const contourLightDir = new THREE.Vector3(); // contour/rim: upper-right, from behind
+const keyLightDir     = new THREE.Vector3();
+const contourLightDir = new THREE.Vector3();
 const _right          = new THREE.Vector3();
 const _up             = new THREE.Vector3();
 
@@ -22,28 +19,23 @@ function Earth() {
     _right.setFromMatrixColumn(camera.matrix, 0);
     _up.setFromMatrixColumn(camera.matrix, 1);
 
-    // Key: right side, high above globe, pointing down
-    keyLightDir.copy(camera.position).addScaledVector(_right, 3).addScaledVector(_up, 7).normalize();
+    // Key: upper-right from camera — ~30° right, ~45° above
+    keyLightDir.copy(camera.position)
+      .addScaledVector(_right, 1.5)
+      .addScaledVector(_up, 3)
+      .normalize();
 
-    // Fill: left side, high above globe, pointing down (warmer, handled in shader)
-    fillLightDir.copy(camera.position).addScaledVector(_right, -3).addScaledVector(_up, 7).normalize();
-
-    // Bounce: soft from below
-    bounceLightDir.copy(camera.position).addScaledVector(_up, -8).normalize();
-
-    // Contour: behind the sphere, upper-right — rim on the silhouette edge
-    contourLightDir.copy(camera.position).negate().addScaledVector(_right, 2).addScaledVector(_up, 3).normalize();
+    // Contour: behind the sphere, upper-right — subtle rim definition
+    contourLightDir.copy(camera.position).negate()
+      .addScaledVector(_right, 1.5)
+      .addScaledVector(_up, 2)
+      .normalize();
   });
 
   return (
     <mesh ref={ref}>
       <icosahedronGeometry args={[2, 64]} />
-      <EarthMaterial
-        keyLightDir={keyLightDir}
-        fillLightDir={fillLightDir}
-        bounceLightDir={bounceLightDir}
-        contourLightDir={contourLightDir}
-      />
+      <EarthMaterial keyLightDir={keyLightDir} contourLightDir={contourLightDir} />
       <AtmosphereMesh />
     </mesh>
   );
