@@ -49,11 +49,6 @@ function getEarthMat({ keyLightDir, contourLightDir }) {
       vec3  dayColor = texture2D(dayTexture, vUv).rgb;
       float landMask = texture2D(landMaskTexture, vUv).r;
 
-      // Clouds — blend white over the day texture
-      float cloudMask = texture2D(cloudsTexture, vUv).g;
-      cloudMask = smoothstep(0.2, 0.8, cloudMask);
-      vec3 surfaceColor = mix(dayColor, vec3(1.0), cloudMask);
-
       // Key light — smooth diffuse, no hard terminator
       float keyDot     = dot(keyLightDir, normal);
       float keyDiffuse = pow(max(keyDot, 0.0), 0.8);
@@ -62,13 +57,13 @@ function getEarthMat({ keyLightDir, contourLightDir }) {
       // Reference: shadow side is nearly black with a hint of warm amber
       vec3 warmAmbient = vec3(0.18, 0.14, 0.10);
 
-      vec3 color = surfaceColor * (keyDiffuse + warmAmbient);
+      vec3 color = dayColor * (keyDiffuse + warmAmbient);
 
-      // Metallic specular on continents — suppressed under clouds
+      // Metallic specular on continents — moderate spread, warm gold
       vec3  keyHalf = normalize(keyLightDir + viewDir);
       float spec    = pow(max(dot(keyHalf, normal), 0.0), 20.0);
       spec *= max(keyDot, 0.0);
-      color += vec3(1.00, 0.84, 0.28) * spec * landMask * (1.0 - cloudMask) * 0.45;
+      color += vec3(1.00, 0.84, 0.28) * spec * landMask * 0.45;
 
       // Contour: very subtle rim on the back-lit silhouette
       float contourDot = max(dot(contourLightDir, normal), 0.0);
